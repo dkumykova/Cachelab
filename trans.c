@@ -24,26 +24,62 @@ int is_transpose(int M, int N, int A[N][M], int B[M][N]);
 char transpose_submit_desc[] = "Transpose submission";
 void transpose_submit(int M, int N, int A[N][M], int B[M][N])
 {
+
+
+	int i, j, tmp;
+
+	    for (i = 0; i < N; i++) {
+	        for (j = 0; j < M; j++) {
+	            tmp = A[i][j];
+	            B[j][i] = tmp;
+	        }
+	    }
+
+
 	//need to transpose line by line within each block
 	//then go through, if encounter a diagonal save that in a variables and come back to it later; outside
 	//of loop
 	//separate into blocks of 8x8 first
-	int i = 0;
 	int j = 0;
-	long current = A[i][j];
-	for(int i = 0; i < N; i++){ //iterate through rows
-		for(int j = 0; j < M; j++){
-				long temp = A[i][j]; //1 node, needs to be  line
-				B[j][i] = temp;
+	int k = 0;
+	int jj;
+	int kk;
+	int temp; //stores value for swapping
+	int diagonal; //store diagonal value to deal with later
+	int diagonal_j; //stores j index for diagonal
+	int diagonal_k; //stores k index for diagonal
+
+	//stay within bounds of block
+	for(jj = 0; jj < 32; jj+= 32){ //row is 8 max (0 indexed)
+		for(kk = 0; kk < 32; kk+= 32){ //column is 8 max (0 indexed)
+
+
+			//process block line by line, so M stays same but n changes --> eventually
+			//right now, processes one by one
+		for(int i = 0; i < N; i++){
+			for(j = jj; j < jj + 32; j++){ //row
+				for(k = kk; k < kk + 32; k++){ //col
+
+					if(j == k){ //diagonal case
+						diagonal = A[j][k];
+						diagonal_j = j;
+						diagonal_k = k;
+
+					} else {
+					temp = A[j][k];
+					B[j][k] = temp;
+					//insert case if diagonal block
+					}
+					}
+				}
+				//after go through whole line, then transpose diagonal case
+				temp = diagonal;
+				B[diagonal_j][diagonal_k] = temp;
+			}
+
 		}
-
-			//go line by line instead of 1 by 1
-
-		}
-
-
-
 }
+
 
 /* 
  * You can define additional transpose functions below. We've defined
