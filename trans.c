@@ -1,4 +1,6 @@
 /* 
+ * dkumykova-tgsprowl
+ * Diana Kumykova and Tyler Sprowl
  * trans.c - Matrix transpose B = A^T
  *
  * Each transpose function must have a prototype of the form:
@@ -22,6 +24,25 @@ int is_transpose(int M, int N, int A[N][M], int B[M][N]);
 char transpose_submit_desc[] = "Transpose submission";
 void transpose_submit(int M, int N, int A[N][M], int B[M][N])
 {
+	//need to transpose line by line within each block
+	//then go through, if encounter a diagonal save that in a variables and come back to it later; outside
+	//of loop
+	//separate into blocks of 8x8 first
+	int i = 0;
+	int j = 0;
+	long current = A[i][j];
+	for(int i = 0; i < N; i++){ //iterate through rows
+		for(int j = 0; j < M; j++){
+				long temp = A[i][j]; //1 node, needs to be  line
+				B[j][i] = temp;
+		}
+
+			//go line by line instead of 1 by 1
+
+		}
+
+
+
 }
 
 /* 

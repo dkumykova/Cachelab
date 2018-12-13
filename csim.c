@@ -198,7 +198,6 @@ void runSim(cache test, cacheLine parsedLine, long tag, int numLines,
 	}
 }
 
-//need to check if line is empty before place anything within it; place in first empty line encountered; spit out index for empty line?
 /**Returns the index of an empty line, or if the cache is full, the line
  * to be evicted when putting a new line into the cache.
  * @param test, cache in which we are looking for a line to replace
