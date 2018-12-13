@@ -8,7 +8,7 @@
  *
  * A transpose function is evaluated by counting the number of misses
  * on a 1KB direct mapped cache with a block size of 32 bytes.
- */ 
+ */
 #include <stdio.h>
 #include "cachelab.h"
 
@@ -22,20 +22,7 @@ int is_transpose(int M, int N, int A[N][M], int B[M][N]);
  *     be graded. 
  */
 char transpose_submit_desc[] = "Transpose submission";
-void transpose_submit(int M, int N, int A[N][M], int B[M][N])
-{
-
-
-	int i, j, tmp;
-
-	    for (i = 0; i < N; i++) {
-	        for (j = 0; j < M; j++) {
-	            tmp = A[i][j];
-	            B[j][i] = tmp;
-	        }
-	    }
-
-
+void transpose_submit(int M, int N, int A[N][M], int B[M][N]) {
 	//need to transpose line by line within each block
 	//then go through, if encounter a diagonal save that in a variables and come back to it later; outside
 	//of loop
@@ -45,61 +32,62 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N])
 	int jj;
 	int kk;
 	int temp; //stores value for swapping
-	int diagonal; //store diagonal value to deal with later
-	int diagonal_j; //stores j index for diagonal
-	int diagonal_k; //stores k index for diagonal
+	//int diagonal; //store diagonal value to deal with later
+	//int diagonal_j; //stores j index for diagonal
+	//int diagonal_k; //stores k index for diagonal
 
 	//stay within bounds of block
-	for(jj = 0; jj < 32; jj+= 32){ //row is 8 max (0 indexed)
-		for(kk = 0; kk < 32; kk+= 32){ //column is 8 max (0 indexed)
+	for (jj = 0; jj < N; jj += N / 4) { //row is 8 max (per block, 32 total
+		for (kk = 0; kk < M; kk += M / 4) { //column is 8 max per block, 32 total
 
-
-			//process block line by line, so M stays same but n changes --> eventually
 			//right now, processes one by one
-		for(int i = 0; i < N; i++){
-			for(j = jj; j < jj + 32; j++){ //row
-				for(k = kk; k < kk + 32; k++){ //col
 
-					if(j == k){ //diagonal case
-						diagonal = A[j][k];
-						diagonal_j = j;
-						diagonal_k = k;
+			for (j = jj; j < jj + N / 4; j++) { //row of block
+				for (k = kk; k < kk + M / 4; k++) { //col of block
 
-					} else {
-					temp = A[j][k];
-					B[j][k] = temp;
-					//insert case if diagonal block
-					}
-					}
+					if (j == k && jj == kk) { //diagonal case
+						continue;
+						//diagonal = A[j][k];
+						//diagonal_j = j;
+						//diagonal_k = k;
+
+					} //else {
+					temp = A[j][k]; //transpose
+					B[k][j] = temp;
 				}
 				//after go through whole line, then transpose diagonal case
-				temp = diagonal;
-				B[diagonal_j][diagonal_k] = temp;
+				if (j == k) {
+					temp = A[j][k];
+					B[k][j] = temp; //diagonal, j = k
+
+					//B[diagonal_k][diagonal_j] = temp;
+				}
+
 			}
-
 		}
-}
 
+	}
+
+}
 
 /* 
  * You can define additional transpose functions below. We've defined
  * a simple one below to help you get started. 
- */ 
+ */
 
 /* 
  * trans - A simple baseline transpose function, not optimized for the cache.
  */
 char trans_desc[] = "Simple row-wise scan transpose";
-void trans(int M, int N, int A[N][M], int B[M][N])
-{
-    int i, j, tmp;
+void trans(int M, int N, int A[N][M], int B[M][N]) {
+	int i, j, tmp;
 
-    for (i = 0; i < N; i++) {
-        for (j = 0; j < M; j++) {
-            tmp = A[i][j];
-            B[j][i] = tmp;
-        }
-    }    
+	for (i = 0; i < N; i++) {
+		for (j = 0; j < M; j++) {
+			tmp = A[i][j];
+			B[j][i] = tmp;
+		}
+	}
 
 }
 
@@ -110,13 +98,12 @@ void trans(int M, int N, int A[N][M], int B[M][N])
  *     performance. This is a handy way to experiment with different
  *     transpose strategies.
  */
-void registerFunctions()
-{
-    /* Register your solution function */
-    registerTransFunction(transpose_submit, transpose_submit_desc); 
+void registerFunctions() {
+	/* Register your solution function */
+	registerTransFunction(transpose_submit, transpose_submit_desc);
 
-    /* Register any additional transpose functions */
-    registerTransFunction(trans, trans_desc); 
+	/* Register any additional transpose functions */
+	registerTransFunction(trans, trans_desc);
 
 }
 
@@ -125,17 +112,16 @@ void registerFunctions()
  *     A. You can check the correctness of your transpose by calling
  *     it before returning from the transpose function.
  */
-int is_transpose(int M, int N, int A[N][M], int B[M][N])
-{
-    int i, j;
+int is_transpose(int M, int N, int A[N][M], int B[M][N]) {
+	int i, j;
 
-    for (i = 0; i < N; i++) {
-        for (j = 0; j < M; ++j) {
-            if (A[i][j] != B[j][i]) {
-                return 0;
-            }
-        }
-    }
-    return 1;
+	for (i = 0; i < N; i++) {
+		for (j = 0; j < M; ++j) {
+			if (A[i][j] != B[j][i]) {
+				return 0;
+			}
+		}
+	}
+	return 1;
 }
 
